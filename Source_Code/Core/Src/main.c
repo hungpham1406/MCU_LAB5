@@ -74,6 +74,24 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef * huart) {
 		 HAL_UART_Receive_IT (&huart2 , &temp , 1);
 	 }
 }
+
+void getTimerRun() {
+	timerRun();
+}
+
+void blinkyLed() {
+	HAL_GPIO_TogglePin(LED_YELLOW_GPIO_Port, LED_YELLOW_Pin);
+}
+void runUart(){
+	uart_communication_fsm();
+}
+
+void runParser(){
+   if(buffer_flag == 1){
+	   command_parser_fsm();
+	   buffer_flag = 0;
+   }
+}
 /* USER CODE END 0 */
 
 /**
@@ -83,7 +101,8 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef * huart) {
 int main(void)
 {
   /* USER CODE BEGIN 1 */
-
+	parser_status = START_PARSER;
+	uart_status = WAIT_COMMAND;
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -109,27 +128,21 @@ int main(void)
   MX_TIM2_Init();
   /* USER CODE BEGIN 2 */
   HAL_TIM_Base_Start_IT(&htim2);
+  HAL_ADC_Start(&hadc1);
+  HAL_UART_Receive_IT(&huart2, &temp, 1);
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-	HAL_ADC_Start(&hadc1);
-	HAL_UART_Receive_IT(&huart2, &temp, 1);
-	setTimer1(50);
-	parser_status = START_PARSER;
-	uart_status = WAIT_COMMAND;
+  SCH_Init();
+  SCH_Add_Task(getTimerRun, 0, 1);
+  SCH_Add_Task(blinkyLed, 0, 50);
+  SCH_Add_Task(runParser, 0, 50);
+  SCH_Add_Task(runUart, 0, 50);
+
   while (1)
   {
-	  if(timer1_flag == 1) {
-		  setTimer1(50);
-		  HAL_GPIO_TogglePin(LED_YELLOW_GPIO_Port, LED_YELLOW_Pin);
-		  if(buffer_flag==1){
-			   command_parser_fsm();
-			   buffer_flag=0;
-		   }
-
-		   uart_communication_fsm();
-	  }
+	  SCH_Dispatch_Tasks();
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -328,7 +341,7 @@ static void MX_GPIO_Init(void)
 
 /* USER CODE BEGIN 4 */
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
-	timerRun();
+	SCH_Update();
 }
 /* USER CODE END 4 */
 
