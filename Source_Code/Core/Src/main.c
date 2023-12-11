@@ -75,9 +75,6 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef * huart) {
 	 }
 }
 
-void getTimerRun() {
-	timerRun();
-}
 
 void blinkyLed() {
 	HAL_GPIO_TogglePin(LED_YELLOW_GPIO_Port, LED_YELLOW_Pin);
@@ -135,7 +132,7 @@ int main(void)
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   SCH_Init();
-  SCH_Add_Task(getTimerRun, 0, 1);
+  SCH_Add_Task(timerRun, 0, 1);
   SCH_Add_Task(blinkyLed, 0, 50);
   SCH_Add_Task(runParser, 0, 50);
   SCH_Add_Task(runUart, 0, 50);
