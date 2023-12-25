@@ -140,7 +140,10 @@ void SCH_Dispatch_Tasks(void){
 			SCH_Add_Task(temtask.pTask, temtask.Period, temtask.Period);
 		}
 	}
-	    HAL_PWR_EnterSLEEPMode(PWR_MAINREGULATOR_ON, PWR_SLEEPENTRY_WFI);
+	// This function puts the microcontroller into a low-power state
+	// until an interrupt occurs. The sleep mode entry is performed
+	// using the Wait For Interrupt (WFI) instruction.
+	HAL_PWR_EnterSLEEPMode(PWR_MAINREGULATOR_ON, PWR_SLEEPENTRY_WFI);
 }
 
 static uint32_t Get_New_Task_ID(void){
